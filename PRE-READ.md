@@ -1,4 +1,4 @@
-# Pre-read: Coding Interview Preparation
+# Pre-read: AI Coding Interview Preparation
 
 Congratulations on being shortlisted! This document will help you prepare for the upcoming coding interview round.
 
@@ -59,12 +59,7 @@ Before the interview, ensure you have:
    - Understand how to add collaborators to a private repository
    - Be familiar with basic Git commands (add, commit, push)
 
-
-## What You Can Use
-
-- ✅ **LLMs/AI Coding Assistants**: You are **allowed** to use any LLM or AI coding assistant (e.g., ChatGPT, Gemini Code Assist, Cursor AI, GitHub Copilot, etc.)
-- ✅ **Internet**: Feel free to search for documentation, examples, or solutions
-- ✅ **Any Resources**: Use any tools, libraries, or frameworks that help you build the solution
+4. **AI Agent/LLM**: You can choose and use any AI agent or LLM of your choice (e.g., ChatGPT, Gemini Code Assist, Cursor AI, GitHub Copilot, etc.)
 
 
 ## Interview Day Checklist
