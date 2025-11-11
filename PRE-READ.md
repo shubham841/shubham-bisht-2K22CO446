@@ -40,7 +40,7 @@ Make sure:
 
 ## How to Submit
 
-1. Create a private GitHub repository named: `firstname-lastname-collegeid` (e.g., `john-doe-2024CS001`)
+1. Create a private GitHub repository named: `firstname-lastname-collegeid` (e.g., `phunsukh-wangdu-2022CS001`)
 
 2. Organize your code:
    - `src/` - all source code
