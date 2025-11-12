@@ -144,7 +144,7 @@ Once you have finished developing the app locally and it is working. Follow thes
    Replace `YOUR_USERNAME` and `YOUR_REPO_NAME` with your GitHub username and repository name.
 
 7. **Share your repository link**:
-   - Fill in the google form with relevant info: `https://forms.gle/rjogrkweA6WTqvbq7`
+   - Fill in the [Google form](https://forms.gle/rjogrkweA6WTqvbq7) with relevant info
    - Submit your repository URL in the form: `https://github.com/YOUR_USERNAME/YOUR_REPO_NAME`
 
 ---
