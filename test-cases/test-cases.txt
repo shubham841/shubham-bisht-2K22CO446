@@ -1,9 +1,484 @@
-Test Cases Documentation
+========================================
+BOOSTLY - TEST CASES DOCUMENTATION
+========================================
 
-Replace this file with documentation on how to run each use case from the problem.
+Prerequisites:
+- Server running on http://localhost:3000
+- Postman installed
+- Database tables created using init.sql
 
-For each core functionality (Recognition, Endorsements, Redemption), document:
-- How to test the feature
-- Steps to execute the test
-- Expected results
+========================================
+SETUP: CREATE TEST USERS
+========================================
+
+Test Case 0.1: Create User 1 (Alice)
+-------------------------------------
+Method: POST
+URL: http://localhost:3000/api/users
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "name": "Alice Johnson",
+  "email": "alice@example.com"
+}
+
+Expected Response (201):
+{
+  "user_id": 1,
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "credits_received": 0,
+  "credits_to_give": 100,
+  "monthly_sent": 0
+}
+
+Test Case 0.2: Create User 2 (Bob)
+-----------------------------------
+Method: POST
+URL: http://localhost:3000/api/users
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "name": "Bob Smith",
+  "email": "bob@example.com"
+}
+
+Expected Response (201):
+{
+  "user_id": 2,
+  "name": "Bob Smith",
+  "email": "bob@example.com",
+  "credits_received": 0,
+  "credits_to_give": 100,
+  "monthly_sent": 0
+}
+
+Test Case 0.3: Create User 3 (Charlie)
+---------------------------------------
+Method: POST
+URL: http://localhost:3000/api/users
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "name": "Charlie Brown",
+  "email": "charlie@example.com"
+}
+
+Expected Response (201):
+{
+  "user_id": 3,
+  "name": "Charlie Brown",
+  "email": "charlie@example.com",
+  "credits_received": 0,
+  "credits_to_give": 100,
+  "monthly_sent": 0
+}
+
+========================================
+CORE FUNCTIONALITY 1: RECOGNITION
+========================================
+
+Test Case 1.1: Successful Recognition
+--------------------------------------
+Description: Alice sends 30 credits to Bob
+Method: POST
+URL: http://localhost:3000/api/recognitions
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "sender_id": 1,
+  "recipient_id": 2,
+  "amount": 30,
+  "message": "Great work on the project!"
+}
+
+Expected Response (201):
+{
+  "recognition_id": 1,
+  "sender_id": 1,
+  "recipient_id": 2,
+  "amount": 30,
+  "message": "Great work on the project!",
+  "created_at": "2025-11-13T..."
+}
+
+Verification:
+- Check Alice's credits_to_give: Should be 70
+- Check Alice's monthly_sent: Should be 30
+- Check Bob's credits_received: Should be 30
+
+Test Case 1.2: Self-Recognition (Should Fail)
+----------------------------------------------
+Description: User tries to send credits to themselves
+Method: POST
+URL: http://localhost:3000/api/recognitions
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "sender_id": 1,
+  "recipient_id": 1,
+  "amount": 10,
+  "message": "Self recognition test"
+}
+
+Expected Response (400):
+{
+  "error": "Self-recognition is not allowed"
+}
+
+Test Case 1.3: Insufficient Credits (Should Fail)
+--------------------------------------------------
+Description: Alice tries to send more credits than available
+Method: POST
+URL: http://localhost:3000/api/recognitions
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "sender_id": 1,
+  "recipient_id": 3,
+  "amount": 100,
+  "message": "Too many credits"
+}
+
+Expected Response (500):
+{
+  "error": "Insufficient credits"
+}
+
+Note: This assumes Alice already sent 30 credits in Test 1.1, so she only has 70 left.
+
+Test Case 1.4: Monthly Limit Exceeded (Should Fail)
+---------------------------------------------------
+Description: Send recognition that would exceed monthly limit of 100
+Setup: First send 70 credits from Alice to Charlie
+Method: POST
+URL: http://localhost:3000/api/recognitions
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "sender_id": 1,
+  "recipient_id": 3,
+  "amount": 70,
+  "message": "Almost at limit"
+}
+
+Then try to send more:
+Body (raw JSON):
+{
+  "sender_id": 1,
+  "recipient_id": 2,
+  "amount": 1,
+  "message": "Over the limit"
+}
+
+Expected Response (500):
+{
+  "error": "Monthly sending limit exceeded"
+}
+
+Test Case 1.5: Multiple Recognitions
+-------------------------------------
+Description: Bob sends 40 credits to Charlie
+Method: POST
+URL: http://localhost:3000/api/recognitions
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "sender_id": 2,
+  "recipient_id": 3,
+  "amount": 40,
+  "message": "Thanks for your help!"
+}
+
+Expected Response (201):
+Success with recognition_id: 2 (or next available)
+
+========================================
+CORE FUNCTIONALITY 2: ENDORSEMENTS
+========================================
+
+Test Case 2.1: Successful Endorsement
+--------------------------------------
+Description: Charlie endorses Bob's recognition to himself (recognition_id: 2)
+Method: POST
+URL: http://localhost:3000/api/recognitions/2/endorse
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "user_id": 1
+}
+
+Expected Response (201):
+{
+  "message": "Endorsement created successfully"
+}
+
+Test Case 2.2: Duplicate Endorsement (Should Fail)
+---------------------------------------------------
+Description: Same user tries to endorse the same recognition again
+Method: POST
+URL: http://localhost:3000/api/recognitions/2/endorse
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "user_id": 1
+}
+
+Expected Response (409):
+{
+  "error": "You have already endorsed this recognition"
+}
+
+Test Case 2.3: Multiple Users Endorse Same Recognition
+-------------------------------------------------------
+Description: Different user endorses the same recognition
+Method: POST
+URL: http://localhost:3000/api/recognitions/2/endorse
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "user_id": 3
+}
+
+Expected Response (201):
+{
+  "message": "Endorsement created successfully"
+}
+
+Test Case 2.4: User Endorses Multiple Recognitions
+---------------------------------------------------
+Description: Same user endorses different recognition (recognition_id: 1)
+Method: POST
+URL: http://localhost:3000/api/recognitions/1/endorse
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "user_id": 3
+}
+
+Expected Response (201):
+{
+  "message": "Endorsement created successfully"
+}
+
+========================================
+CORE FUNCTIONALITY 3: REDEMPTION
+========================================
+
+Test Case 3.1: Successful Redemption
+-------------------------------------
+Description: Bob redeems 20 credits (should get ₹100 voucher)
+Method: POST
+URL: http://localhost:3000/api/redeem
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "user_id": 2,
+  "credits_to_redeem": 20
+}
+
+Expected Response (200):
+{
+  "message": "Credits redeemed successfully",
+  "voucher_value_inr": 100
+}
+
+Verification:
+- Bob's credits_received should decrease by 20
+- Calculate: 20 credits × ₹5 = ₹100
+
+Test Case 3.2: Insufficient Credits for Redemption (Should Fail)
+-----------------------------------------------------------------
+Description: User tries to redeem more credits than they have
+Method: POST
+URL: http://localhost:3000/api/redeem
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "user_id": 1,
+  "credits_to_redeem": 50
+}
+
+Expected Response (500):
+{
+  "error": "Insufficient credits to redeem"
+}
+
+Note: Alice has 0 credits_received (only sent credits, not received)
+
+Test Case 3.3: Redeem All Credits
+----------------------------------
+Description: User redeems all their received credits
+Method: POST
+URL: http://localhost:3000/api/redeem
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+  "user_id": 3,
+  "credits_to_redeem": 70
+}
+
+Expected Response (200):
+{
+  "message": "Credits redeemed successfully",
+  "voucher_value_inr": 350
+}
+
+Note: Charlie received 70 credits total (70 from Alice in Test 1.4)
+Calculation: 70 credits × ₹5 = ₹350
+
+========================================
+STEP-UP CHALLENGE 2: LEADERBOARD
+========================================
+
+Test Case 4.1: Get Leaderboard (Default Limit)
+-----------------------------------------------
+Method: GET
+URL: http://localhost:3000/api/leaderboard
+
+Expected Response (200):
+[
+  {
+    "user_id": 3,
+    "name": "Charlie Brown",
+    "credits_received": 0,
+    "recognitions_received_count": "2",
+    "total_endorsements_received": "1"
+  },
+  {
+    "user_id": 2,
+    "name": "Bob Smith",
+    "credits_received": 10,
+    "recognitions_received_count": "1",
+    "total_endorsements_received": "2"
+  },
+  {
+    "user_id": 1,
+    "name": "Alice Johnson",
+    "credits_received": 0,
+    "recognitions_received_count": "0",
+    "total_endorsements_received": "0"
+  }
+]
+
+Note: Results depend on previous test executions. Order is by credits_received DESC, then user_id ASC.
+
+Test Case 4.2: Get Leaderboard with Custom Limit
+-------------------------------------------------
+Method: GET
+URL: http://localhost:3000/api/leaderboard?limit=2
+
+Expected Response (200):
+Array with maximum 2 users, sorted by credits_received descending
+
+Test Case 4.3: Get Top 5 Leaderboard
+-------------------------------------
+Method: GET
+URL: http://localhost:3000/api/leaderboard?limit=5
+
+Expected Response (200):
+Array with top 5 users (or all users if less than 5 exist)
+
+========================================
+ADDITIONAL TEST CASES
+========================================
+
+Test Case 5.1: Get User Details
+--------------------------------
+Method: GET
+URL: http://localhost:3000/api/users/1
+
+Expected Response (200):
+{
+  "user_id": 1,
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "credits_received": 0,
+  "credits_to_give": 0,
+  "monthly_sent": 100
+}
+
+Note: Values depend on previous tests executed
+
+Test Case 5.2: Get Non-Existent User (Should Fail)
+---------------------------------------------------
+Method: GET
+URL: http://localhost:3000/api/users/999
+
+Expected Response (404):
+{
+  "error": "User not found"
+}
+
+========================================
+STEP-UP CHALLENGE 1: CREDIT RESET
+========================================
+
+Test Case 6.1: Monthly Credit Reset (Automated)
+------------------------------------------------
+Description: Automatic cron job runs at midnight on 1st of every month
+Cron Schedule: '0 0 1 * *'
+
+To test manually, you can temporarily modify the cron schedule in server.js:
+- Change from: cron.schedule('0 0 1 * *', ...)
+- Change to: cron.schedule('*/1 * * * *', ...) // Runs every minute for testing
+
+Expected Behavior:
+- All users' credits_to_give reset to 100
+- Up to 50 unused credits carried forward
+- If user has 70 credits left: 100 + 50 = 150 total
+- If user has 30 credits left: 100 + 30 = 130 total
+- monthly_sent reset to 0
+
+Console Output:
+"Running monthly credit reset job..."
+"Monthly credit reset successful."
+
+========================================
+TESTING WORKFLOW (RECOMMENDED ORDER)
+========================================
+
+1. Setup Phase:
+   - Run Test Cases 0.1, 0.2, 0.3 (Create 3 users)
+
+2. Recognition Tests:
+   - Run Test Cases 1.1 through 1.5
+   - Verify balances after each transaction
+
+3. Endorsement Tests:
+   - Run Test Cases 2.1 through 2.4
+   - Verify duplicate prevention
+
+4. Redemption Tests:
+   - Run Test Cases 3.1 through 3.3
+   - Verify credit deductions
+
+5. Leaderboard Tests:
+   - Run Test Cases 4.1 through 4.3
+   - Verify ranking logic
+
+6. Additional Tests:
+   - Run Test Cases 5.1 and 5.2
+   - Verify user retrieval
+
+========================================
+POSTMAN COLLECTION IMPORT
+========================================
+
+You can create a Postman collection with all these test cases:
+1. Create a new Collection in Postman
+2. Add each test case as a request
+3. Organize into folders (Setup, Recognition, Endorsements, etc.)
+4. Use Postman variables for base URL: {{baseUrl}} = http://localhost:3000
+5. Use environment variables to store user_ids after creation
+
+========================================
+NOTES
+========================================
+
+- Always verify user balances after transactions using GET /api/users/:id
+- Test cases build on each other - run in order for best results
+- Reset database between full test runs for consistency
+- Monitor server console logs for transaction details
+- All timestamps in responses will vary based on execution time
 

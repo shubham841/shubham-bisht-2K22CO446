@@ -1,6 +1,313 @@
-LLM Chat Export
+Prompt : 1
 
-Replace this file with your exported LLM/AI assistant chat conversation.
+I am starting a new project called 'Boostly'. I will use JavaScript, Express.js, and a Neon PostgreSQL database.
 
-If you used LLMs or AI coding assistants (e.g., ChatGPT, Gemini Code Assist, Cursor AI), paste your complete conversation here.
+My project structure will be:
 
+your-repository/
+└── src/
+All my code will be inside the src/ folder.
+
+Please help me start. Here's the plan:
+
+Tell me the npm commands to initialize a new Node.js project inside src/ and install express, pg (for PostgreSQL), and dotenv.
+
+Create a file named src/db.js. This file should use dotenv to get the DATABASE_URL from process.env.
+
+In src/db.js, create and export a PostgreSQL connection pool using pg. This pool must be configured to work with Neon, so it needs the ssl: { rejectUnauthorized: false } option.
+
+Export two methods from src/db.js: query(text, params) and getClient().
+
+---
+
+Prompt : 2
+
+Create a SQL table named 'users'. It needs a user_id as a serial primary key, a name, a unique email, credits_received (default 0, non-negative), credits_to_give (default 100, non-negative), and monthly_sent (default 0, non-negative).
+
+---
+
+Prompt : 3
+
+Create a SQL table named 'recognitions'. It needs a recognition_id (serial primary key), sender_id (foreign key to users), recipient_id (foreign key to users), amount (must be > 0), message (text), and a created_at timestamp. Add a CHECK constraint that sender_id cannot equal recipient_id.
+
+---
+
+Prompt : 4
+
+Create a SQL table named 'endorsements'. It needs an endorsement_id (serial primary key), user_id (foreign key to users), and recognition_id (foreign key to recognitions). Add a UNIQUE constraint on user_id and recognition_id.
+
+---
+
+Prompt : 5
+
+Require 'express' and the './db.js' module. Create an express app, add the express.json() middleware, and make it listen on port 3000.
+
+---
+
+Prompt : 6
+
+Create a POST route for '/api/users'. It should get name and email from req.body and use db.query to insert them into the 'users' table. Return the new user in the response. Add a try-catch block for errors.
+
+---
+
+Prompt : 7
+
+Create a GET route for '/api/users/:id'. It should get the id from req.params and use db.query to select and return that user's details (id, name, email, credits_received, credits_to_give, monthly_sent).
+
+---
+
+Prompt : 8
+
+"Create a POST route for '/api/recognitions'."
+
+"Inside the route, get sender_id, recipient_id, amount, and message from req.body."
+
+"First, add a validation check: if sender_id equals recipient_id, return a 400 error with the message 'Self-recognition is not allowed'."
+
+"Get a database client using db.getClient(). Make sure the client variable is declared so it can be used in try, catch, and finally."
+
+"Start a try...catch...finally block."
+
+"Inside the try block, start a transaction by querying 'BEGIN'."
+
+"Still in the try block, query the 'users' table to select credits_to_give and monthly_sent for the sender_id. Lock the row for update."
+
+"Add validation: if the queried amount is greater than the sender's credits_to_give, throw a new Error 'Insufficient credits'."
+
+"Add validation: if sender.monthly_sent + amount is greater than 100, throw a new Error 'Monthly sending limit exceeded'."
+
+"Write a query to UPDATE the 'users' table: decrement credits_to_give by amount and increment monthly_sent by amount for the sender_id."
+
+"Write a query to UPDATE the 'users' table: increment credits_received by amount for the recipient_id."
+
+"Write a query to INSERT the new record into the 'recognitions' table (sender_id, recipient_id, amount, message) and return the new recognition."
+
+"Commit the transaction."
+
+"Send a 201 Created response with the new recognition object."
+
+"Inside the catch block, check if a transaction was started, and if so, rollback the transaction. Then send a 500 error with the error message."
+
+"Inside the finally block, check if the client exists and release it."
+
+---
+
+Prompt : 9
+
+"Create a POST route for '/api/recognitions'."
+
+"Inside the route, get sender_id, recipient_id, amount, and message from req.body."
+
+"First, add a validation check: if sender_id equals recipient_id, return a 400 error with the message 'Self-recognition is not allowed'."
+
+"Get a database client using db.getClient(). Make sure the client variable is declared so it can be used in try, catch, and finally."
+
+"Start a try...catch...finally block."
+
+"Inside the try block, start a transaction by querying 'BEGIN'."
+
+"Still in the try block, query the 'users' table to select credits_to_give and monthly_sent for the sender_id. Lock the row for update."
+
+"Add validation: if the queried amount is greater than the sender's credits_to_give, throw a new Error 'Insufficient credits'."
+
+"Add validation: if sender.monthly_sent + amount is greater than 100, throw a new Error 'Monthly sending limit exceeded'."
+
+"Write a query to UPDATE the 'users' table: decrement credits_to_give by amount and increment monthly_sent by amount for the sender_id."
+
+"Write a query to UPDATE the 'users' table: increment credits_received by amount for the recipient_id."
+
+"Write a query to INSERT the new record into the 'recognitions' table (sender_id, recipient_id, amount, message) and return the new recognition."
+
+"Commit the transaction."
+
+"Send a 201 Created response with the new recognition object."
+
+"Inside the catch block, check if a transaction was started, and if so, rollback the transaction. Then send a 500 error with the error message."
+
+"Inside the finally block, check if the client exists and release it."
+
+
+---
+
+Prompt : 10
+
+Step 5: Build the Endorsements Feature
+"Create a POST route for '/api/recognitions/:id/endorse'."
+
+"Get the recognition id from req.params and user_id from req.body."
+
+"Start a try...catch block."
+
+"Inside the try block, use db.query to INSERT the user_id and recognition_id into the 'endorsements' table."
+
+"If successful, send a 201 Created response with a success message."
+
+"Inside the catch block, check if the error code is '23505'. This is the PostgreSQL code for a unique violation."
+
+"If the error code is '23505', send a 409 Conflict response with the message 'You have already endorsed this recognition'."
+
+"If it's a different error, send a 500 Internal Server Error response."
+
+---
+
+Prompt : 11
+
+Step 6: Build the Redemption Feature
+"Create a POST route for '/api/redeem'."
+
+"Get user_id and credits_to_redeem from req.body."
+
+"Get a database client using db.getClient(). Declare the client variable so it's accessible in try, catch, and finally."
+
+"Start a try...catch...finally block."
+
+"Inside the try block, start a transaction by querying 'BEGIN'."
+
+"Still in the try block, select the user's credits_received from the 'users' table. Lock the row for update."
+
+"Add validation: if credits_to_redeem is greater than the user's credits_received, throw a new Error 'Insufficient credits to redeem'."
+
+"Write a query to UPDATE the 'users' table: decrement credits_received by credits_to_redeem for the user_id."
+
+"Commit the transaction."
+
+"Calculate the voucher_value_inr by multiplying credits_to_redeem by 5."
+
+"Send a 200 OK response with a success message and the voucher_value_inr."
+
+"Inside the catch block, rollback the transaction and send a 500 error with the error message."
+
+"Inside the finally block, check if the client exists and release it."
+
+---
+
+Prompt : 12
+
+"Require 'node-cron' at the top of the file."
+
+"Start a new cron job that is scheduled to run '0 0 1 * *'." (This means 0 minutes, 0 hours, on the 1st day of every month, every month, every day of the week).
+
+"Inside the cron job's callback function, log 'Running monthly credit reset job...'."
+
+"Create a SQL query string for the reset logic."
+
+"The SQL query should UPDATE all users."
+
+"It should set credits_to_give to 100 + (CASE WHEN credits_to_give > 50 THEN 50 ELSE credits_to_give END)."
+
+"The same query should also reset monthly_sent to 0."
+
+"Use db.query to execute this SQL query. Add a try-catch block."
+
+"If the query is successful, log 'Monthly credit reset successful.'."
+
+"If it fails, log the error."
+
+---
+
+Prompt : 13
+
+Step 8: Build the Leaderboard (Step-Up Challenge 2)
+"Create a GET route for '/api/leaderboard'."
+
+"Inside the route, get an optional limit from req.query. If it's not provided, it should default to 10."
+
+"Create a SQL query string to build the leaderboard."
+
+"The query needs to select u.user_id, [u.name](http://u.name/), and u.credits_received from the 'users' table (aliased as 'u')."
+
+"It also needs to count the total number of recognitions received by each user (aliasi it as recognitions_received_count)."
+
+"It also needs a subquery to count all endorsements for all recognitions received by that user (aliasi it as total_endorsements_received)."
+
+(Copilot might need help here. The subquery should look like: (SELECT COUNT(*) FROM endorsements e JOIN recognitions r_inner ON e.recognition_id = r_inner.recognition_id WHERE r_inner.recipient_id = u.user_id))
+
+"LEFT JOIN the 'recognitions' table (aliased as 'r') on u.user_id = r.recipient_id."
+
+"GROUP BY u.user_id."
+
+"ORDER BY u.credits_received DESC, and then u.user_id ASC as a tie-breaker."
+
+"Use the limit variable as a parameter for the query limit."
+
+"Use db.query to execute the query, passing the limit as a parameter."
+
+"Send the results as a 200 OK response. Add a try-catch block for errors."
+
+---
+
+Prompt : 14
+
+Core Functionality
+
+1. Recognition
+Allows one student to recognize another and transfer a certain number of credits.
+
+Business Rules:
+
+Each student receives 100 credits every month (reset at the start of each calendar month)
+Students cannot send credits to themselves (self-recognition is not allowed)
+Each student has a monthly sending limit of 100 credits (per calendar month)
+A student cannot send more credits than they currently have in their balance
+A student cannot exceed their monthly sending limit
+2. Endorsements
+Enables students to endorse an existing recognition entry (like/cheer).
+
+Business Rules:
+
+Each endorser can endorse a recognition entry only once
+Endorsements are just a count — they don't affect credit balances or any other functionality
+3. Redemption
+Lets students redeem the credits they've received.
+
+Business Rules:
+
+Credits are converted into a fixed-value voucher at ₹5 per credit
+When credits are redeemed, they are permanently deducted from the student's balance
+A student can only redeem credits they have received
+Step-Up Challenges
+
+1. Credit Reset
+Add a mechanism to automatically reset each student's monthly credit balance to 100 at the start of a new month, with an optional carry-forward of up to 50 unused credits.
+
+Business Rules:
+
+Each student's available credits reset to 100 at the start of each calendar month
+Up to 50 unused credits from the previous month can be carried forward
+If a student has more than 50 unused credits, only 50 can be carried forward
+The monthly sending limit also resets to 100 credits
+2. Leaderboard
+Build a feature to list top recipients ranked by total credits received. Include both recognition counts and endorsement totals.
+
+Business Rules:
+
+Rank students by total credits received (descending order)
+If two students have the same total credits, rank by student ID (ascending order)
+Include the total number of recognitions received by each student
+Include the total number of endorsements received across all recognitions
+Support a limit parameter to control how many top students are returned
+Deliverables
+Folder Structure
+Organize your submission using the following folder structure in your GitHub repository:
+
+your-repository/
+├── src/                           # All source code goes here
+│   └── [readme.md](http://readme.md/)                  # Project documentation (setup, API endpoints, etc.)
+├── prompt/                        # LLM chat exports go here
+│   └── llm-chat-export.txt        # Exported LLM/AI assistant conversations
+└── test-cases/                    # Test cases documentation goes here
+└── test-cases.txt             # Documentation on how to run each use case
+Required Files
+Complete source code in the src/ folder
+
+[readme.md](http://readme.md/) in the src/ folder with:
+
+Setup instructions
+Run instructions
+API endpoints documentation
+Sample requests and responses
+LLM Chat Export - Update prompt/llm-chat-export.txt:
+
+If you used LLMs/AI assistants, paste your complete exported conversation in this file
+Replace the placeholder content with your actual LLM chat export
+Test Cases Documentation - Update test-cases/test-cases.txt:
